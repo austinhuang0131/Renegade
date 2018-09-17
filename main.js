@@ -18,7 +18,7 @@ bot.secrets = require("./resources/secrets.json");
 bot.commands = [];
 
 fs.readdir("./commands", (error, files) => {
-  if (error) console.log(error);
+  if (error) throw error;
   files.forEach((index) => {
     bot.commands[index.replace(/\..*/g, "")] = require("./commands/" + index);
   });
