@@ -1,0 +1,14 @@
+{
+  "prefix": "?",
+  "developers": [],
+  "colors": {
+    "red": 16711680,
+    "orange": 16753920,
+    "green": 65280,
+    "embedColor": 0
+  },
+  "emojis": {
+    "check": "<:tickYes:488368778091167744>",
+    "x": "<:tickNo:488368981133230102>"
+  }
+}
