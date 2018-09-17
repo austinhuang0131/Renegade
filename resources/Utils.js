@@ -1,4 +1,3 @@
-// this place houses all functions :)
 const config = require("./resources/config.json");
 const secrets = require("./resources/secrets.json");
 const ordinal = require("ordinal");
@@ -24,13 +23,13 @@ module.exports = {
             guildId: guild.id
         }).run().then(row => {
             if (!row[0]) r.db('modbot_db').table('cases').insert({
-                number: `1`,
+                number: 1,
                 guildId: `${guild.id}`
             }).run();
             else r.db('modbot_db').table('cases').filter({
                 guildId: guild.id
             }).update({
-                number: `${parseInt(row[0].number) + 1}`,
+                number: row[0].number + 1,
                 guildId: `${guild.id}`
             }).run();
         });
@@ -423,11 +422,20 @@ module.exports = {
 
                                         findMember: function (server, user) {
                                             if (!user) return null;
+                                            if (!server) return null;
                                             if (/^\d+$/.test(user)) return server.members.get(user); // ID 
                                             else if (/^<@\d+>$/.test(user)) return server.members.get(user.match(/\d+/)[0]); // Mention
                                             else if (/^\w+#\d{4}$/.test(user)) return server.members.filter((m) => m.user.username.toLowerCase() === user.toLowerCase().match(/^\w+/)[0] && m.user.discriminator === String(user.match(/\d{4}/)[0]))[0]; // username and discrim
                                             else if (server.members.filter((m) => m.user.username.toLowerCase() === user.toLowerCase()).length > 0) return server.members.filter((m) => m.user.username.toLowerCase() === user.toLowerCase())[0] // username
                                             return server.members.filter((m) => m.nick && m.nick.toLowerCase() === user.toLowerCase())[0]; //nickname
+                                        },
+
+                                        findRole: function (server, role) {
+                                            if (!server) return null;
+                                            if (role) return null;
+                                            if (/^\d+$/.test(role)) return server.roles.get(role); // ID 
+                                            else if (/^<@\d+>$/.test(role)) return server.roles.get(role.match(/\d+/)[0]); // Mention
+                                            return server.roles.filter((r) => role.name.toLowerCase() == role.toLowerCase())[0]; // name
                                         }
 
 
