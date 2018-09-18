@@ -1,5 +1,5 @@
-const config = require("./resources/config.json");
-const secrets = require("./resources/secrets.json");
+const config = require("./config.json");
+const secrets = require("./secrets.json");
 const ordinal = require("ordinal");
 module.exports = {
 
@@ -96,7 +96,7 @@ module.exports = {
                     });
                 },
 
-                createHelpEmbed: function (cmd) {
+                createHelpEmbed: function (cmd, content = null) {
                     let fields = [];
                     if (cmd.commands.length > 1) {
                         fields.push({
@@ -119,11 +119,11 @@ module.exports = {
                     if (cmd.args) {
                         cmd.args.forEach(arg => {
                             if (arg.optional) argStrings.push(`[${arg.name}]`);
-                            else argsStrings.push(`<${arg.name}>`);
+                            else argStrings.push(`<${arg.name}>`);
                         });
                     }
 
-                    argStrings.length > 0 ? usage = `${cmd.commands[0]} ${argStrings.join(" ")}` : `${cmd.name}`;
+                    argStrings.length > 0 ? usage = `${cmd.commands[0]} ${argStrings.join(" ")}` : usage = `${cmd.commands[0]}`;
 
                     fields.push({
                         name: "Usage",
@@ -137,7 +137,7 @@ module.exports = {
                         });
                     }
 
-                    return {
+                    let obj = {
                         embed: {
                             author: {
                                 name: `Help for the ${cmd.commands[0]} command`
@@ -147,6 +147,9 @@ module.exports = {
                             fields: fields
                         }
                     };
+
+                    if (content) obj.content = content;
+                    return obj;
                 },
 
                 channelIsBlocked: async function (channel) {
@@ -219,7 +222,39 @@ module.exports = {
                                     if (!msg.content.startsWith((prefix))) return;
                                     let command = Object.keys(bot.commands).filter((c) => bot.commands[c].commands.indexOf(msg.content.toLowerCase().replace(prefix.toLowerCase(), "").split(" ")[0]) > -1);
                                     if (command.length < 1) return;
+
+                                    // TODO: add perm node support
+                                    if (bot.commands[command[0]].perms) {
+                                        let botPermsNeeded = [];
+                                        let userPermsNeeded = [];
+                                        bot.commands[command[0]].perms.forEach(permissionObj => {
+                                            // errors more useful than NodeJS errors lmao
+                                            if (!permissionObj.type) throw "Permission objects must have types";
+                                            if (!permissionObj.perms) throw "Permission objects must have permissions";
+                                            if (!permissionObj.perms instanceof Array) throw "Permission objects' perms value must be an array";
+                                            switch (permissionObj.type.toLowerCase()) {
+                                                case "bot":
+                                                    permissionObj.perms.forEach(perm => {
+                                                        let botmember = msg.channel.guild.members.get(bot.user.id);
+                                                        if (!botmember.permission.has(perm)) botPermsNeeded.push(perm);
+                                                    });
+                                                    break;
+                                                case "user":
+                                                    permissionObj.perms.forEach(perm => {
+                                                        if (!msg.member.permission.has(perm)) userPermsNeeded.push(perm);
+                                                    });
+                                                    break;
+                                                default:
+                                                    throw "Permission types must be of types bot or user"
+                                            }
+                                        });
+                                        if (botPermsNeeded.length > 0) return msg.channel.createMessage(`${config.emojis.x} I do not have enough permissions to do that.\nPermissions Needed: \`${botPermsNeeded.join(", ")}\``);
+                                        if (userPermsNeeded.length > 0) return msg.channel.createMessage(`${config.emojis.x} You do not have enough permissions to do that.\nPermissions Needed: \`${userPermsNeeded.join(", ")}\``);
+                                    }
+
+
                                     const args = ((msg.content.replace(prefix, "").split(" ").length > 1) ? msg.content.replace(prefix, "").split(" ").slice(1) : []);
+                                    if (args.length < bot.commands[command[0]].args.filter(a => !a.optional).length) return msg.channel.createMessage(this.createHelpEmbed(bot.commands[command[0]], "It looks like you do not have enough arguments!"));
                                     try {
                                         await bot.commands[command[0]].execute(bot, msg, args);
                                         console.log(`Command Log: The ${command} command was used`);
@@ -432,10 +467,10 @@ module.exports = {
 
                                         findRole: function (server, role) {
                                             if (!server) return null;
-                                            if (role) return null;
+                                            if (!role) return null;
                                             if (/^\d+$/.test(role)) return server.roles.get(role); // ID 
                                             else if (/^<@\d+>$/.test(role)) return server.roles.get(role.match(/\d+/)[0]); // Mention
-                                            return server.roles.filter((r) => role.name.toLowerCase() == role.toLowerCase())[0]; // name
+                                            return server.roles.filter((r) => r.name.toLowerCase() == role.toLowerCase())[0]; // name
                                         }
 
 
