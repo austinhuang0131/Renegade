@@ -283,64 +283,50 @@ module.exports = {
                                 handleXP: async function (msg) {
                                         let r = this.getDB();
                                         if (msg.author.bot) return;
-                                        var foo = await r.table("xp").filter({
+                                        let data = await r.table("xp").filter({
                                             guildId: `${msg.channel.guild.id}`
                                         }).run();
-                                        if (!foo[0]) return;
+                                        if (!data[0]) return;
 
                                         let user = msg.author.id;
-                                        if (foo[0].bannedusers.length > 0) {
-                                            if (foo[0].bannedusers.includes(user)) return;
+                                        if (data[0].bannedusers.length > 0) {
+                                            if (data[0].bannedusers.includes(user)) return;
                                         }
 
-                                        if (foo[0].bannedroles.length > 0) {
-                                            let isBanned = false;
-                                            foo[0].bannedroles.forEach(role => {
-                                                if (msg.member.roles.has(role)) isBanned = true;
-                                            })
-                                            if (isBanned) return;
+                                        if (data[0].bannedroles.length > 0) {
+                                            let hasBannedRole = false;
+                                            data[0].bannedroles.forEach(role => {
+                                                if (msg.member.roles.has(role)) hasBannedRole = true;
+                                            });
+                                            if (hasBannedRole) return;
                                         }
 
                                         let timestamp = msg.timestamp;
 
                                         function getLvl(xp) {
-                                            let num = xp / 75;
-                                            let newnum = parseInt(Math.sqrt(num));
-                                            let finalnum = Math.pow(newnum, 2) + newnum;
-                                            if (num >= finalnum) {
-                                                return newnum;
-                                            } else {
-                                                return newnum - 1;
-                                            }
+                                            return Math.pow(parseInt(Math.sqrt(xp / 75)), 2) + parseInt(Math.sqrt(xp / 75));
                                         }
 
-
-
                                         function getRolesForLvl(lvl) {
-                                            let arr = [];
-                                            if (foo[0].rewards[0]) {
-                                                for (var i = 0; i < foo[0].rewards.length; i++) {
-                                                    if (foo[0].rewards[i] && foo[0].rewards[i].lvl <= lvl) {
-                                                        arr.push(foo[0].rewards[i].roleId);
-                                                    }
-                                                }
+                                            let roles = [];
+                                            if (data[0].rewards.length > 0) {
+                                                data[0].rewards.forEach(reward => {
+                                                    if (reward.lvl <= lvl) roles.push(lvl);
+                                                });
                                             }
-                                            return arr;
+                                            return roles;
                                         }
 
 
                                         let newxp = Math.floor(Math.random() * 50) + 1;
-                                        let users = foo[0].users;
-                                        let userish = users.filter(u => u.userId === user);
-                                        let _user = userish[0];
-                                        let olduserdata = _user;
+                                        let olduserdata = data[0].users.filter(u => u.userId == user)[0];
                                         let newuserdata;
+                                        let users = data[0].users.filter(u => u.userId != user);
                                         if (!olduserdata) {
-                                            const random = newxp;
                                             newuserdata = {
-                                                userId: msg.author.id,
-                                                xp: random,
-                                                lvl: getLvl(random),
+                                                userId: user,
+                                                xp: newxp,
+                                                lvl: getLvl(newxp),
                                                 lastxpget: msg.timestamp
                                             };
                                             users.push(newuserdata);
@@ -349,39 +335,36 @@ module.exports = {
                                             }).update({
                                                 users: users
                                             }).run();
-                                            return;
                                         } else {
                                             if (timestamp - olduserdata.lastxpget < 60000) return;
-                                            const rnd = newxp;
                                             newuserdata = {
-                                                userId: msg.author.id,
-                                                xp: _user.xp + rnd,
-                                                lvl: getLvl(_user.xp + rnd),
+                                                userId: user,
+                                                xp: olduserdata.xp + newxp,
+                                                lvl: getLvl(olduserdata.xp + newxp),
                                                 lastxpget: msg.timestamp
                                             };
-                                            let thingie = foo[0].users.filter(u => u.userId !== msg.author.id);
-                                            thingie.push(newuserdata);
+                                            users.push(newuserdata);
                                             r.table("xp").filter({
                                                 guildId: msg.channel.guild.id
                                             }).update({
-                                                users: thingie
+                                                users: users
                                             }).run();
                                         }
 
                                         function getRanking(xp) {
-                                            var u = foo[0].users;
-                                            let _u = u.filter(u => u.userId === msg.member.user.id);
-                                            var scores = new Set(Object.keys(u).map(function (key) {
-                                                return u[key].xp;
+                                            let userlist = data[0].users;
+                                            let userdata = u.filter(u => u.userId == user)[0];
+                                            let scores = new Set(Object.keys(userlist).map(function (key) {
+                                                return userlist[key].xp;
                                             }));
-                                            var ordered_scores = Array.from(scores).sort(function (a, b) {
+                                            let ordered_scores = Array.from(scores).sort(function (a, b) {
                                                 return b - a;
                                             });
-                                            return ordered_scores.indexOf(_u[0].xp) + 1;
+                                            return ordered_scores.indexOf(userdata.xp) + 1; // plus 1 because there is no 0th place
                                         }
 
                                         if (olduserdata && olduserdata.lvl < newuserdata.lvl) {
-                                            let lvlupmsg = foo[0].lvlupmsg;
+                                            let lvlupmsg = data[0].lvlupmsg;
                                             if (lvlupmsg) {
                                                 let username = msg.author.username;
                                                 let mention = msg.author.toString();
@@ -394,9 +377,9 @@ module.exports = {
                                                 msg.channel.send(`GG ${msg.author}, you are now level **${newuserdata.lvl}**`);
                                             }
                                         }
-                                        if (foo[0].rewards[0] && getRolesForLvl(newuserdata.lvl).length > 0) {
-                                            let alldemroles = getRolesForLvl(newuserdata.lvl);
-                                            alldemroles.forEach(r => {
+                                        if (data[0].rewards.length > 0 && getRolesForLvl(newuserdata.lvl).length > 0) {
+                                            let rolerewards = getRolesForLvl(newuserdata.lvl);
+                                            rolerewards.forEach(r => {
                                                 if (msg.member.roles.has(r)) return;
                                                 msg.member.addRole(r);
                                             });
@@ -415,7 +398,8 @@ module.exports = {
 
                                             let user = msg.author.id;
                                             if (!msg.member.lastMessage) return;
-                                            let lastMessageTimestamp = msg.member.lastMessage.createdTimestamp;
+                                            // TODO: define lastMessage because eris doesn't have it omg 
+                                            let lastMessageTimestamp = msg.member.lastMessage.timestamp;
 
                                             let users = {};
 
