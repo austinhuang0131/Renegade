@@ -172,6 +172,7 @@ module.exports = {
         if (!msg.content.startsWith((prefix))) return;
         let command = bot.commands[Object.keys(bot.commands).filter((c) => bot.commands[c].commands.indexOf(msg.content.toLowerCase().replace(prefix.toLowerCase(), "").split(" ")[0]) > -1)[0]];
         if (!command) return;
+        if(command.devOnly && !this.isDeveloper(msg.author)) return;
         if (command.clientPerms || command.userPerms) {
             let neededClientPerms = [];
             let neededUserPerms = [];
