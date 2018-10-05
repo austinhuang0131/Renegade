@@ -1,11 +1,11 @@
 {
   "prefix": "?",
-  "developers": [],
+  "developers": ["324949143581884417"],
   "colors": {
-    "red": 16711680,
-    "orange": 16753920,
-    "green": 65280,
-    "embedColor": 0
+    "embedColor": 0,
+    "modlog": {
+
+    }
   },
   "emojis": {
     "check": "<:tickYes:488368778091167744>",
