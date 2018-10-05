@@ -19,25 +19,46 @@ bot.secrets = require("./resources/secrets.json");
 bot.commands = [];
 
 const init = async () => {
-  const cmdFolders = await readdir("./commands", { withFileTypes: true });
-  cmdFolders.forEach(async dir => {
-    const category = dir.name;
-    const cmdFiles = await readdir(`./commands/${category}`);
-    cmdFiles.forEach(f => {
-      if (!f.endsWith(".js")) return;
-      bot.commands[f.replace(/\..*/g, "")] = require(`./commands/${category}/${f}`);
-    });
-  });
 
-  readdir("./events", (error, files) => {
-    if (error) throw error;
-    files.forEach((index) => {
-      const event = require("./events/" + index);
-      event(bot);
+  async function loadCommands() {
+    const cmdContents = await readdir("./commands", { withFileTypes: true });
+    cmdContents.forEach(async content => {
+      if (content.isDirectory()) {
+        const category = content.name;
+        const cmdFiles = await readdir(`./commands/${category}`);
+        cmdFiles.forEach(f => {
+          if (!f.endsWith(".js")) return;
+          bot.commands[f.replace(/\..*/g, "")] = require(`./commands/${category}/${f}`);
+        });
+      } else {
+        if (!content.name.endsWith(".js")) return;
+        bot.commands[f.replace(/\..*/g, "")] = require(`./commands/${content.name}`);
+      }
     });
-  });
+  }
 
-  bot.connect();
+  async function loadEvents() {
+    const eventContents = await readdir("./events", { withFileTypes: true });
+    eventContents.forEach(async content => {
+      if (content.isDirectory()) {
+        const category = content.name;
+        const eventFiles = await readdir(`./events/${category}`);
+        eventFiles.forEach(f => {
+          if (!f.endsWith(".js")) return;
+          const event = require(`./events/${category}/${f}`);
+          event(bot);
+        });
+      } else {
+        if (!content.name.endsWith(".js")) return;
+        const event = require(`./events/${content.name}`);
+        event(bot);
+      }
+    });
+  }
+
+  await loadCommands();
+  await loadEvents();
+  await bot.connect();
 }
 
 init();
