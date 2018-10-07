@@ -18,9 +18,7 @@ module.exports = {
 
     getPrefix: async function (guild) {
         let r = this.getDB();
-        let data = await r.table("guildSettings").filter({
-            guildID: guild.id
-        }).run();
+        let data = await r.table("guildSettings").filter({ guildID: guild.id }).run();
         if (!data[0] || !data[0].prefix) return this.getConfig().prefix;
         else return data[0].prefix;
     },
@@ -83,7 +81,7 @@ module.exports = {
 
     handleMessage: async function (bot, msg) {
         if (msg.author.bot) return;
-        if (!msg.guild) return;
+        if (msg.channel.type != 0) return;
         const mentionPrefix = msg.content.match(new RegExp(`<@!?${bot.user.id}>`, 'g'));
         let prefix = this.getConfig().prefix;
        /* if (!msg.content.startsWith(await this.getPrefix(msg.guild)) && await this.getUserPrefix(msg.author) && msg.content.startsWith(await this.getUserPrefix(msg.author))) {

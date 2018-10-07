@@ -26,7 +26,7 @@ module.exports = {
     if ((msg.member.highestRole.position <= member.highestRole.position ||
       member == msg.guild.owner) &&
       msg.author.id != msg.guild.ownerID) return msg.channel.createMessage(`${bot.config.emojis.x} You do not have permission to manage roles for this user.`);
-    if (!member.roles[role.id]) return msg.channel.createMessage(`${bot.config.emojis.x} That user does not have that role.`);
+    if (!member.roles.includes(role.id)) return msg.channel.createMessage(`${bot.config.emojis.x} That user does not have that role.`);
     if (role.managed) return msg.channel.createMessage(`${bot.config.emojis.x} That role is managed by an integration. You can not manage this role.`);
     try {
       await member.removeRole(role.id, `Role removed by: ${msg.author.username}#${msg.author.discriminator}`);

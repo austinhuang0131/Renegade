@@ -10,6 +10,8 @@
   "license": "ISC",
   "dependencies": {
     "eris": "^0.9.0",
-    "rethinkdbdash": "^2.3.31"
+    "eris-additions": "^1.2.5",
+    "rethinkdbdash": "^2.3.31",
+    "snekfetch": "^4.0.4"
   }
 }
