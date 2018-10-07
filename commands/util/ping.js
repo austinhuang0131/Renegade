@@ -9,7 +9,7 @@ module.exports = {
             content: "Pong! 🏓",
             embed: {
                 color: bot.config.colors.embedColor,
-                description: `API Latency: \`${msg.channel.guild.shard.latency}ms\``
+                description: `API Latency: \`${msg.guild.shard.latency}ms\``
             }
         });
     }

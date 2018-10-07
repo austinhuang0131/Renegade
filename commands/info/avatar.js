@@ -11,7 +11,7 @@ module.exports = {
     }],
     hidden: false,
     execute: (bot, msg, args) => {
-        let mentioned = bot.utils.findMember(msg.channel.guild, args[0]);
+        let mentioned = bot.utils.findMember(msg.guild, args[0]);
         if (!mentioned) mentioned = msg.member;
         msg.channel.createMessage({
             embed: {
