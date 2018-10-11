@@ -1,6 +1,7 @@
 module.exports = (bot) => {
     bot.on("guildMemberAdd", async (guild, member) => {
         let data = await bot.r.table("guildSettings").filter({ guildID: guild.id }).run();
+<<<<<<< HEAD
         if (data[0] && data[0].autoRoles) {
             let autoRoles = data[0].autoRoles;
             autoRoles.forEach(roleID => member.addRole(roleID, "Autorole"));
@@ -24,5 +25,10 @@ module.exports = (bot) => {
             let channels = data[0].logs["joinleave"];
             channels.forEach(id => guild.channels.get(id).createMessage({ embed: embed }));
         }
+=======
+        if (!data[0] || !data[0].autoRoles) return;
+        let autoRoles = data[0].autoRoles;
+        autoRoles.forEach(roleID => member.addRole(roleID, "Autorole"));
+>>>>>>> 6a87870bb0dcebefd8efc9fcdc088e449094abee
     });
 }

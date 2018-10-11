@@ -10,7 +10,11 @@
   "license": "ISC",
   "dependencies": {
     "eris": "^0.9.0",
+<<<<<<< HEAD
     "eris-additions": "github:minemidnight/eris-additions",
+=======
+    "eris-additions": "^1.2.5",
+>>>>>>> 6a87870bb0dcebefd8efc9fcdc088e449094abee
     "rethinkdbdash": "^2.3.31",
     "snekfetch": "^4.0.4"
   }
