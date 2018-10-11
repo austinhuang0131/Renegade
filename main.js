@@ -1,5 +1,5 @@
 const Utils = require("./resources/Utils.js");
-const Eris = require("eris");
+const Eris = require("eris-additions")(require("eris"));
 const bot = new Eris(Utils.getSecrets().token, {
   getAllUsers: true,
   defaultImageFormat: "png",
@@ -14,8 +14,8 @@ const r = require("rethinkdbdash")({
 Utils.db = r;
 bot.utils = Utils;
 bot.r = r;
-bot.config = require("./resources/config.json");
-bot.secrets = require("./resources/secrets.json");
+bot.config = bot.utils.getConfig();
+bot.secrets = bot.utils.getSecrets();
 bot.commands = [];
 
 const init = async () => {

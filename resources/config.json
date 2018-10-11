@@ -1,14 +1,30 @@
 {
   "prefix": "?",
-  "developers": ["324949143581884417", "304424505563152394"],
+  "developers": [
+    "SEPERATE",
+    "THESE",
+    "WITH",
+    "COMMAS"
+  ],
   "colors": {
     "embedColor": 0,
-    "modlog": {
-
+    "log": {
+      "ban": 16711680,
+      "msgDelete": 16711680,
+      "leave": 16711680,
+      "kick": 16753920,
+      "msgEdit": 16753920,
+      "join": 65280,
+      "unban": 65280
     }
   },
   "emojis": {
     "check": "<:check:497614446819278848>",
     "x": "<:deny:497614477068337167>"
-  }
+  },
+  "validLogs": [
+    "mod",
+    "joinleave",
+    "message"
+  ]
 }

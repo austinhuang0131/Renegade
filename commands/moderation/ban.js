@@ -34,13 +34,16 @@ module.exports = {
             if (ban.user.id == (toBeBanned.user ? toBeBanned.user.id : toBeBanned)) isBanned = true;
         });
         if (isBanned) return msg.channel.createMessage(`${bot.config.emojis.x} That user is already banned.`);
-        let reason = args[1];
-        if (!reason) reason = "Unspecified";
+        let reason = args.slice(1).join(" ");
         try {
             await msg.guild.banMember(toBeBanned.user ? toBeBanned.user.id : toBeBanned, 7, reason);
             let ban = await msg.guild.getBan(toBeBanned.user ? toBeBanned.user.id : toBeBanned);
             let banned = ban.user;
-            msg.channel.createMessage(`${bot.config.emojis.check} banned \`${banned.username}\` with a success!`);
+            let string = `${bot.config.emojis.check} Banned \`${banned.username}\``;
+            if (reason) string += ` with reason \`${reason}\``;
+            msg.channel.createMessage(string);
+            let data = await bot.r.table("guildSettings").filter({ guildID: msg.guild.id }).run();
+            if (data[0] && data[0].logs && data[0].logs["mod"]) await bot.utils.modLog(msg.guild, msg.author, banned, "Ban", reason);
         } catch (e) {
             if (e.message.toLowerCase().includes("unknown user")) return msg.channel.createMessage(`${bot.config.emojis.x} You must provide a valid user ID when banning someone not in the server.`);
             msg.channel.createMessage(`${bot.config.emojis.x} An error occured which caused me not to be able to do that.`);

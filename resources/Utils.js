@@ -18,13 +18,18 @@ module.exports = {
 
     getPrefix: async function (guild) {
         let r = this.getDB();
-        let data = await r.table("guildSettings").filter({
-            guildID: guild.id
-        }).run();
+        let data = await r.table("guildSettings").filter({ guildID: guild.id }).run();
         if (!data[0] || !data[0].prefix) return this.getConfig().prefix;
         else return data[0].prefix;
     },
-    
+
+    getUserPrefix: async function (user) {
+        let r = this.getDB();
+        let data = await r.table("userprefixes").filter({ userID: user.id }).run();
+        if (!data[0]) return null;
+        else return data[0].prefix;
+    },
+
     createHelpEmbed: function (cmd, content = null) {
         let fields = [];
         if (cmd.commands.length > 1) {
@@ -81,21 +86,44 @@ module.exports = {
         return obj;
     },
 
+    modLog: async function (guild, moderator, offender, action, reason) {
+        let caseNum;
+        let data = await this.db.table("guildSettings").filter({ guildID: guild.id }).run();
+        if (!data[0] || !data[0].logs || !data[0].logs["mod"]) throw "Tried to create a mod-log with no mod-log data.";
+        else {
+            data[0].caseNum ? caseNum = data[0].caseNum + 1 : caseNum = 1;
+            await this.db.table("guildSettings").filter({ guildID: guild.id }).update({ caseNum: caseNum }).run();
+        }
+        let string = `➤ **Action:** ${action}\n➤ **Offender:** ${offender.tag} (**${offender.id}**)\n➤ **Reason:** ${reason ? reason : "No reason provided."}`;
+        let embed = {
+            author: {
+                icon_url: moderator.avatarURL,
+                name: moderator.tag
+            },
+            color: config.colors.log[action.toLowerCase()],
+            description: string,
+            footer: {
+                text: `Case #${caseNum}`
+            },
+            timestamp: new Date()
+        };
+        let channels = data[0].logs["mod"];
+        channels.forEach(id => guild.channels.get(id).createMessage({ embed: embed }));
+    },
+
     handleMessage: async function (bot, msg) {
         if (msg.author.bot) return;
-        if (!msg.guild) return;
+        if (msg.channel.type != 0) return;
         const mentionPrefix = msg.content.match(new RegExp(`<@!?${bot.user.id}>`, 'g'));
-        let prefix = this.getConfig().prefix;
-       /* if (!msg.content.startsWith(await this.getPrefix(msg.guild)) && await this.getUserPrefix(msg.author) && msg.content.startsWith(await this.getUserPrefix(msg.author))) {
-          prefix = await userPrefixGet(msg.author); 
-    }*/ if (mentionPrefix && msg.content.startsWith(mentionPrefix[0])) {
+        let prefix = await this.getPrefix(msg.guild);
+        if (!msg.content.startsWith(await this.getPrefix(msg.guild)) && await this.getUserPrefix(msg.author) && msg.content.startsWith(await this.getUserPrefix(msg.author))) {
+            prefix = await this.getUserPrefix(msg.author);
+        } else if (mentionPrefix && msg.content.startsWith(mentionPrefix[0])) {
             prefix = `${mentionPrefix[0]} `;
             if (msg.mentions.length > 1) msg.mentions = msg.mentions.slice(1);
             if (msg.mentions.length === 1 && msg.mentions[0] === bot && mentionPrefix.length === 1) msg.mentions = msg.mentions.slice(1);
-        } else {
-            prefix = await this.getPrefix(msg.guild);
         }
-        if (!msg.content.startsWith((prefix))) return;
+        if (!msg.content.startsWith(prefix)) return;
         let command = bot.commands[Object.keys(bot.commands).filter((c) => bot.commands[c].commands.indexOf(msg.content.toLowerCase().replace(prefix.toLowerCase(), "").split(" ")[0]) > -1)[0]];
         if (!command) return;
         if (command.devOnly && !this.isDeveloper(msg.author)) return;
@@ -163,7 +191,7 @@ module.exports = {
     findChannel: function (server, channel) {
         if (!server || !channel) return undefined;
         if (/^\d+$/.test(channel)) return server.channels.get(channel); // ID 
-        else if (/^<#\d+>$/.test(channel)) return server.channel.get(channel.match(/\d+/)[0]); // Mention
+        else if (/^<#\d+>$/.test(channel)) return server.channels.get(channel.match(/\d+/)[0]); // Mention
         return server.channels.filter((r) => r.name.toLowerCase() == channel.toLowerCase())[0]; // name
     },
 
