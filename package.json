@@ -11,7 +11,6 @@
   "dependencies": {
     "eris": "^0.9.0",
     "eris-additions": "github:minemidnight/eris-additions",
-    "eris-additions": "^1.2.5",
     "rethinkdbdash": "^2.3.31",
     "snekfetch": "^4.0.4"
   }
