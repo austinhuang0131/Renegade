@@ -25,3 +25,4 @@ module.exports = (bot) => {
             channels.forEach(id => guild.channels.get(id).createMessage({ embed: embed }));
         }
     });
+}
