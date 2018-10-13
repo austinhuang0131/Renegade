@@ -177,8 +177,8 @@ module.exports = {
 		if (/^\d+$/.test(user)) return server.members.get(user); // ID 
 		else if (/^<@\d+>$/.test(user) || /^<@!\d+>$/.test(user)) return server.members.get(user.match(/\d+/)[0]); // Mention
 		else if (/^\w+#\d{4}$/.test(user)) return server.members.filter((m) => m.user.username.toLowerCase() === user.toLowerCase().match(/^\w+/)[0] && m.user.discriminator === String(user.match(/\d{4}/)[0]))[0]; // username and discrim
-		else if (server.members.filter((m) => m.user.username.toLowerCase() === user.toLowerCase()).length > 0) return server.members.filter((m) => m.user.username.toLowerCase() === user.toLowerCase())[0]; // username
-		return server.members.filter((m) => m.nick && m.nick.toLowerCase() === user.toLowerCase())[0]; //nickname
+		else if (server.members.filter((m) => m.username.toLowerCase() === user.toLowerCase()).length > 0) return server.members.filter((m) => m.username.toLowerCase() === user.toLowerCase())[0]; // username
+		else return server.members.filter((m) => m.nick && m.nick.toLowerCase() === user.toLowerCase())[0]; //nickname
 	},
 
 	findRole: function (server, role) {
