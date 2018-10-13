@@ -1,10 +1,7 @@
 {
   "prefix": "?",
   "developers": [
-    "SEPERATE",
-    "THESE",
-    "WITH",
-    "COMMAS"
+    "324949143581884417"
   ],
   "colors": {
     "embedColor": 0,
@@ -20,7 +17,13 @@
   },
   "emojis": {
     "check": "<:check:497614446819278848>",
-    "x": "<:deny:497614477068337167>"
+    "x": "<:deny:497614477068337167>",
+    "play": "<:play:500693528838406145>",
+    "pause": "<:pause:500693815238197268>",
+    "fastforward": "<:fastforward:500693851246428161>",
+    "rewind": "<:rewind:500693945408552971>",
+    "playlist": "<:playlist:500693834506960932>",
+    "shuffle": "<:shuffle:500693866337271808>"
   },
   "validLogs": [
     "mod",
